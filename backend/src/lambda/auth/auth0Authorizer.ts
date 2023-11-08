@@ -6,6 +6,7 @@ import { createLogger } from '../../utils/logger'
 import httpError from 'http-errors';
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
+import request from 'request';
 import * as fetch from 'fetch';
 
 const logger = createLogger('auth')
@@ -13,7 +14,7 @@ const logger = createLogger('auth')
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-const jwksUrl = '...'
+const jwksUrl = 'https://dev-z040eegdv0z0nnhw.us.auth0.com/.well-known/jwks.json';
 
 export const handler = async (
   event: CustomAuthorizerEvent
@@ -55,29 +56,29 @@ export const handler = async (
   }
 }
 
-// async function verifyJwk() {
-//   let getJwks = (cb: any) => {
-//     request({
-//       uri: jwksUrl,
-//       strictSSL: true,
-//       json: true
-//     }, (err, res) => {
-//       if (err || res.statusCode < 200 || res.statusCode >= 300) {
-//         if (res) {
-//           return cb({
-//             code: res.statusCode,
-//             message: `Http Error ${res.statusCode}: ` + res.statusMessage
-//           });
-//         }
-//         return cb(err);
-//       }
+async function verifyJwk() {
+  let getJwks = (cb: any) => {
+    request({
+      uri: jwksUrl,
+      strictSSL: true,
+      json: true
+    }, (err, res) => {
+      if (err || res.statusCode < 200 || res.statusCode >= 300) {
+        if (res) {
+          return cb({
+            code: res.statusCode,
+            message: `Http Error ${res.statusCode}: ` + res.statusMessage
+          });
+        }
+        return cb(err);
+      }
 
-//       let jwks = res.body.keys;
-//       return cb(null, jwks);
-//     });
-//   }
-//   return getJwks;
-// }
+      let jwks = res.body.keys;
+      return cb(null, jwks);
+    });
+  }
+  return getJwks;
+}
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader);
@@ -87,6 +88,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
   const jwkRetrieval = await fetch(jwksUrl).then((response: any) => response.json());
+  verifyJwk();
   let key = jwkRetrieval.find((key: any) => key.kid === jwt.header.kid);
   if (jwt.header.alg !== 'RS256') {
     throw new httpError.Unauthorized();

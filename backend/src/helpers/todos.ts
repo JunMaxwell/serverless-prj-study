@@ -11,7 +11,7 @@ let todoAccess = new TodosAccess();
 let fileStorage = new FileStorage();
 
 // TODO: Implement businessLogic
-export function createTodo(toDo: CreateTodoRequest, userId: string) {
+export async function createTodo(toDo: CreateTodoRequest, userId: string) {
     let newTodoId = nanoid();
     let requestedTodo: TodoItem = {
         userId: userId,

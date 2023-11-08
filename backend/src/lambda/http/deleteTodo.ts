@@ -13,6 +13,10 @@ export const handler = middy(
     // TODO: Remove a TODO item by id
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
       body: JSON.stringify({
         item: deleteTodo(getUserId(event), todoId)
       })

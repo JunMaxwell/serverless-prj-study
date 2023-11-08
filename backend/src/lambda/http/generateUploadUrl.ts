@@ -12,9 +12,13 @@ export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const todoId = event.pathParameters.todoId
     // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
-    let fetchAwsUrl = await fileStorage.getUploadUrl(todoId);
+    let fetchAwsUrl = fileStorage.getUploadUrl(todoId);
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
       body: JSON.stringify({
         url: fetchAwsUrl
       })
